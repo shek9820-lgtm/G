@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Peeks player</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}iframe{position:absolute;left:0;top:0;width:100%;height:100%;border:0}</style>
+</head><body>
+<script>
+(function(){
+ var q=new URLSearchParams(location.search),id=q.get("v")||"";
+ if(!/^[\w-]{5,20}$/.test(id))return;
+ var f=document.createElement("iframe");
+ f.allow="autoplay; encrypted-media";f.setAttribute("playsinline","");f.referrerPolicy="strict-origin-when-cross-origin";
+ f.src="https://www.youtube-nocookie.com/embed/"+id+"?autoplay=1&mute=1&controls=0&loop=1&playlist="+id+"&playsinline=1&rel=0&modestbranding=1&fs=0&disablekb=1&iv_load_policy=3&enablejsapi=1&origin="+encodeURIComponent(location.origin);
+ function cmd(fn,a){try{f.contentWindow.postMessage(JSON.stringify({event:"command",func:fn,args:a||""}),"*")}catch(e){}}
+ f.onload=function(){if(q.get("u")==="1")setTimeout(function(){cmd("unMute");cmd("playVideo")},700)};
+ document.body.appendChild(f);
+ /* the app (parent) sends play / pause / mute commands; forward them to the YouTube player */
+ window.addEventListener("message",function(e){
+  if(e.source!==parent)return;var d=e.data;
+  try{if(typeof d==="string")d=JSON.parse(d)}catch(x){return}
+  if(d&&d.event==="command"&&typeof d.func==="string")cmd(d.func,d.args)});
+})();
+</script>
+</body></html>
